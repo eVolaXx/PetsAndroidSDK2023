@@ -8,8 +8,6 @@ import android.os.Bundle;
 
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -20,11 +18,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,12 +37,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.UUID;
 
-import petsnetwork.juanka.android.AdopcionActivity;
-import petsnetwork.juanka.android.MainActivity;
+import petsnetwork.juanka.android.AdoptionActivity;
 import petsnetwork.juanka.android.R;
-import petsnetwork.juanka.android.SetupActivity;
 
 // Clase para enviar y añadir un perro en adopcion
 public class AddDogAdopcion extends AppCompatActivity {
@@ -265,7 +257,7 @@ public class AddDogAdopcion extends AppCompatActivity {
     }
 
     private void SendUserToMainActivity() {
-        Intent mainIntent = new Intent(AddDogAdopcion.this, AdopcionActivity.class);
+        Intent mainIntent = new Intent(AddDogAdopcion.this, AdoptionActivity.class);
         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(mainIntent);
         finish();

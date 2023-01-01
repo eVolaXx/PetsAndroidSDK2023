@@ -14,10 +14,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
+        <activity android:name=".SearchDogActivity"></activity>
         <activity
-            android:name=".EducationKotlin"
-            android:label="@string/title_activity_education_kotlin"
-            android:theme="@style/AppTheme.NoActionBar.NoActionBar"></activity>
+            android:name=".EducationDog"
+            android:label="@string/title_activity_education_dog"
+            android:theme="@style/AppTheme.NoActionBar.NoActionBar" />
+
+
         <activity
             android:name="petsnetwork.juanka.AddDogAdopcion"
             android:label="@string/title_activity_add_dog_adopcion"
@@ -32,12 +35,13 @@
         </service>
         -->
         <activity android:name=".TiendaActivity" />
-        <activity android:name=".AdopcionActivity" />
+        <activity android:name=".AdoptionActivity" />
         <activity android:name=".InfoPersonActivity" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" />
-        <activity android:name=".PetsLogin">
+        <activity android:name=".PetsLogin"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />

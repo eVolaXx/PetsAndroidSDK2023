@@ -41,8 +41,9 @@ import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import petsnetwork.juanka.android.EducationKotlin;
-import petsnetwork.juanka.android.AdopcionActivity;
+import petsnetwork.juanka.android.EducationDog;
+import petsnetwork.juanka.android.EducationDog;
+import petsnetwork.juanka.android.AdoptionActivity;
 import petsnetwork.juanka.android.ComentariosActivity;
 import petsnetwork.juanka.android.PetsLogin;
 import petsnetwork.juanka.android.Posts;
@@ -171,11 +172,11 @@ public class InicioFragment extends Fragment {
                 break;
 
             case R.id.adopcion:
-                Intent AdopcionIntent = new Intent(getActivity(), AdopcionActivity.class);
+                Intent AdopcionIntent = new Intent(getActivity(), AdoptionActivity.class);
                 startActivity(AdopcionIntent);
                 break;
             case R.id.educacion:
-                Intent EducacionIntent = new Intent(getActivity(), EducationKotlin.class);
+                Intent EducacionIntent = new Intent(getActivity(), EducationDog.class);
                 startActivity(EducacionIntent);
                 break;
 

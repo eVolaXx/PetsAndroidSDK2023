@@ -26,8 +26,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
+import androidx.activity.result.ActivityResultLauncher;
+import com.canhub.cropper.CropImageContract;
+import com.canhub.cropper.CropImageContractOptions;
+import com.canhub.cropper.CropImageOptions;
+import com.canhub.cropper.CropImageView;
 
 import java.util.HashMap;
 
@@ -44,8 +47,9 @@ public class SetupActivity extends AppCompatActivity {
     private DatabaseReference UsersRef;
     private StorageReference UserProfileImageRef;
 
+    private ActivityResultLauncher<CropImageContractOptions> cropImageLauncher;
+
     String currentUserID;
-    final static int Gallery_Pick = 1;
 
 
     @Override
@@ -57,6 +61,52 @@ public class SetupActivity extends AppCompatActivity {
         currentUserID = mAuth.getCurrentUser().getUid();
         UsersRef = FirebaseDatabase.getInstance().getReference().child("Users").child(currentUserID);
         UserProfileImageRef = FirebaseStorage.getInstance().getReference().child("profileimage");
+
+        cropImageLauncher = registerForActivityResult(new CropImageContract(), result -> {
+            if (result.isSuccessful()) {
+                loadingBar.setTitle("Imagen de Perfil");
+                loadingBar.setMessage("Por favor, elige la mejor foto de tu mascota...");
+                loadingBar.show();
+                loadingBar.setCanceledOnTouchOutside(true);
+
+                Uri resultUri = result.getUriContent();
+                StorageReference filePath = UserProfileImageRef.child(currentUserID + ".jpg");
+
+                filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull final Task<UploadTask.TaskSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(SetupActivity.this, "Imagen de perfil subida al servidor...", Toast.LENGTH_SHORT).show();
+                            task.getResult().getMetadata().getReference().getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    final String downloadUrl = uri.toString();
+                                    UsersRef.child("profileimage").setValue(downloadUrl)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        Intent selfIntent = new Intent(SetupActivity.this, SetupActivity.class);
+                                                        startActivity(selfIntent);
+                                                        Toast.makeText(SetupActivity.this, "Imagen de perfil subida correctamente...", Toast.LENGTH_SHORT).show();
+                                                        loadingBar.dismiss();
+                                                    } else {
+                                                        String message = task.getException().getMessage();
+                                                        Toast.makeText(SetupActivity.this, "Ha ocurrido un error : " + message, Toast.LENGTH_SHORT).show();
+                                                        loadingBar.dismiss();
+                                                    }
+                                                }
+                                            });
+                                }
+                            });
+                        }
+                    }
+                });
+            } else {
+                Toast.makeText(this, "Ha ocurrido un error: La imagen no ha podido ser recortada. Prueba de nuevo.", Toast.LENGTH_SHORT).show();
+                loadingBar.dismiss();
+            }
+        });
 
 
         EdtxUsuario = (EditText) findViewById(R.id.nombre_usuario);
@@ -81,10 +131,12 @@ public class SetupActivity extends AppCompatActivity {
             @Override
             public void onClick(View view)
             {
-                Intent galleryIntent = new Intent();
-                galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-                galleryIntent.setType("image/*");
-                startActivityForResult(galleryIntent, Gallery_Pick);
+                CropImageOptions cropImageOptions = new CropImageOptions();
+                cropImageOptions.guidelines = CropImageView.Guidelines.ON;
+                cropImageOptions.aspectRatioX = 1;
+                cropImageOptions.aspectRatioY = 1;
+                cropImageOptions.fixAspectRatio = true;
+                cropImageLauncher.launch(new CropImageContractOptions(null, cropImageOptions));
             }
         });
 
@@ -116,88 +168,9 @@ public class SetupActivity extends AppCompatActivity {
 
     }
 
-    // Metodo donde el usuario si quiere puede añadir su foto de perfil. Guardar imagen de usuario a la base de datos.
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == Gallery_Pick && resultCode == RESULT_OK && data != null && data.getData() !=null) {
-
-            Uri ImageUri = data.getData();
-            CropImage.activity()
-                    .setGuidelines(CropImageView.Guidelines.ON)
-                    .setAspectRatio(1, 1)
-                    .start(this);
-        }
-
-        if(requestCode==CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE)
-        {
-            CropImage.ActivityResult result = CropImage.getActivityResult(data);
-
-            if(resultCode == RESULT_OK)
-            {
-                loadingBar.setTitle("Imagen de Perfil");
-                loadingBar.setMessage("Por favor, elige la mejor foto de tu mascota...");
-                loadingBar.show();
-                loadingBar.setCanceledOnTouchOutside(true);
-
-                Uri resultUri = result.getUri();
-                StorageReference filePath = UserProfileImageRef.child(currentUserID + ".jpg");
-
-                filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull final Task<UploadTask.TaskSnapshot> task)
-                    {
-                        if(task.isSuccessful())
-                        {
-                            Toast.makeText(SetupActivity.this, "Imagen de perfil subida al servidor...", Toast.LENGTH_SHORT).show();
-
-                            Task<Uri> result = task.getResult().getMetadata().getReference().getDownloadUrl();
-
-                            result.addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    final String downloadUrl = uri.toString();
-
-                                    UsersRef.child("profileimage").setValue(downloadUrl)
-                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task)
-                                                {
-                                                    if(task.isSuccessful())
-                                                    {
-                                                        Intent selfIntent = new Intent(SetupActivity.this, SetupActivity.class);
-                                                        startActivity(selfIntent);
-
-                                                        Toast.makeText(SetupActivity.this, "Imagen de perfil subida correctamente...", Toast.LENGTH_SHORT).show();
-                                                        loadingBar.dismiss();
-                                                    }
-                                                    else
-                                                    {
-                                                        String message = task.getException().getMessage();
-                                                        Toast.makeText(SetupActivity.this, "Ha ocurrido un error : " + message, Toast.LENGTH_SHORT).show();
-                                                        loadingBar.dismiss();
-                                                    }
-                                                }
-                                            });
-
-                                }
-                            });
-
-
-
-
-                        }
-                    }
-                });
-            }
-            else
-            {
-                Toast.makeText(this, "Ha ocurrido un error: La imagen no ha podido ser recortada. Prueba de nuevo.", Toast.LENGTH_SHORT).show();
-                loadingBar.dismiss();
-            }
-        }
-
     }
 
 
